@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>比較政府與政治｜初選制度與傑利蠑螈（Gerrymandering）教學頁</title>
+<style>
+  :root{
+    --bg:#0f172a; /* slate-900 */
+    --panel:#111827; /* gray-900 */
+    --soft:#1f2937; /* gray-800 */
+    --card:#0b1220;
+    --text:#e5e7eb; /* gray-200 */
+    --muted:#94a3b8; /* slate-400 */
+    --accent:#2563eb; /* blue-600 */
+    --good:#16a34a; /* green-600 */
+    --bad:#dc2626;  /* red-600 */
+    --warning:#f59e0b; /* amber-500 */
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:linear-gradient(180deg,#0b1220 0%, #0f172a 60%, #0b1220 100%);
+    color:var(--text); font-family:ui-sans-serif,system-ui,-apple-system,"Noto Sans TC","PingFang TC","Segoe UI",Roboto,"Helvetica Neue",Arial,"Apple Color Emoji","Segoe UI Emoji";
+    line-height:1.55;
+  }
+  a{color:#93c5fd}
+  .container{max-width:1100px; margin:0 auto; padding:20px}
+  header{
+    position:sticky; top:0; z-index:10; backdrop-filter: blur(8px);
+    background-color:rgba(11,18,32,0.75); border-bottom:1px solid #1f2a44;
+  }
+  .nav{display:flex; gap:16px; flex-wrap:wrap; align-items:center; padding:12px 4px}
+  .nav a{padding:8px 12px; border-radius:999px; background:#0b1220; border:1px solid #1f2a44; text-decoration:none; font-size:14px}
+  .title{padding:22px 0 8px 0}
+  h1{margin:0; font-size:28px; letter-spacing:0.3px}
+  h2{margin:28px 0 12px; font-size:22px; border-left:4px solid var(--accent); padding-left:10px}
+  h3{margin:18px 0 8px; font-size:18px}
+  p.lead{color:var(--muted); margin:8px 0 18px}
+  .grid{display:grid; gap:14px}
+  .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .card{
+    background:radial-gradient(1200px 500px at 10% -10%, #0d1830 5%, #0b1220 45%, #0a0f1c 90%);
+    border:1px solid #1f2a44; border-radius:14px; padding:16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.35);
+  }
+  .muted{color:var(--muted); font-size:14px}
+  .row{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  .chip{display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border:1px solid #223056; background:#0b1220; border-radius:999px; font-size:12px}
+  .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+       background:#0b1220; border:1px solid #223056; border-bottom-width:2px; padding:2px 6px; border-radius:6px; font-size:12px}
+  .btn{
+    background:linear-gradient(180deg,#1d4ed8,#1e40af);
+    color:white; border:0; border-radius:10px; padding:8px 12px; cursor:pointer;
+    font-weight:600
+  }
+  .btn.secondary{background:#0b1220; border:1px solid #1f2a44; color:#cbd5e1}
+  .btn.warn{background:linear-gradient(180deg,#f59e0b,#d97706); color:#111827}
+  .btn.good{background:linear-gradient(180deg,#16a34a,#15803d)}
+  .btn.bad{background:linear-gradient(180deg,#dc2626,#b91c1c)}
+  .btn:disabled{opacity:.5; cursor:not-allowed}
+  .controls{display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end}
+  label{font-size:13px; color:var(--muted)}
+  input[type="number"], select, input[type="range"], input[type="text"]{
+    width:100%; background:#0b1220; color:#e5e7eb; border:1px solid #1f2a44; border-radius:10px; padding:8px 10px
+  }
+  .range-row{display:grid; grid-template-columns: 1fr 70px; gap:10px; align-items:center}
+  .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+  .pill{display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid #1f2a44; background:#0b1220; font-size:12px; color:#cbd5e1}
+  .legend{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  .dot{width:14px; height:14px; border-radius:3px; display:inline-block; border:1px solid #0b1220}
+  .blue{background:#3b82f6}
+  .red{background:#ef4444}
+  .neutral{background:#64748b}
+  .districtGrid{
+    display:grid; grid-template-columns: repeat(8, 32px); gap:2px; user-select:none;
+    padding:6px; background:#0b1220; border:1px solid #1f2a44; border-radius:10px; width:max-content
+  }
+  .cell{
+    width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+    border-radius:6px; position:relative; cursor:pointer; font-size:11px; font-weight:700;
+    transition: transform .05s ease;
+  }
+  .cell:hover{transform: translateY(-1px)}
+  .cell.blue{background:#3b82f6}
+  .cell.red{background:#ef4444}
+  .cell .badge{
+    position:absolute; bottom:-8px; right:-8px; background:#0b1220; border:1px solid #1f2a44; color:#93c5fd; font-size:10px; padding:1px 4px; border-radius:999px
+  }
+  /* district borders by outline effect */
+  .cell[data-edge-top="1"]{box-shadow: 0 -2px 0 0 #f8fafc inset}
+  .cell[data-edge-left="1"]{box-shadow: -2px 0 0 #f8fafc inset}
+  .cell[data-edge-right="1"]{box-shadow: 2px 0 0 0 #f8fafc inset}
+  .cell[data-edge-bottom="1"]{box-shadow: 0 2px 0 0 #f8fafc inset}
+  .stat{display:grid; grid-template-columns: repeat(4,1fr); gap:10px; margin-top:8px}
+  .stat .s{background:#0b1220; border:1px solid #1f2a44; padding:10px; border-radius:10px; text-align:center}
+  .footnotes{font-size:12px; color:#9ca3af}
+  .kbd-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  .hr{height:1px; background:#1f2a44; margin:16px 0}
+  .callout{border-left:3px solid var(--accent); background:#0b1220; padding:12px; border-radius:10px; border:1px solid #1f2a44}
+  @media (max-width: 920px){ .g2{grid-template-columns: 1fr} .districtGrid{transform: scale(0.95)} }
+</style>
+</head>
+<body>
+<header>
+  <div class="container nav">
+    <div class="row" style="gap:6px">
+      <span class="pill">比較政府與政治｜助教課</span>
+      <span class="pill">教學主題：初選制度與傑利蠑螈（Gerrymandering）</span>
+    </div>
+    <div style="flex:1"></div>
+    <nav class="row">
+      <a href="#primaries">初選制度</a>
+      <a href="#sim">初選模擬器</a>
+      <a href="#gerry">區劃分界小遊戲</a>
+      <a href="#prompts">討論題</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+  <div class="title">
+    <h1>初選類型、代表分配與不規則劃分（Gerrymandering）</h1>
+    <p class="lead">本頁提供簡明介紹與兩個互動工具：一個<a href="#sim">單州初選代表分配模擬器</a>，以及一個<a href="#gerry">「cracking／packing」劃分小遊戲</a>。重要術語附英文以利學術對照。</p>
+  </div>
+
+  <section id="primaries" class="card">
+    <h2>一、初選制度概覽 <span class="muted">Primary elections &amp; Caucuses</span></h2>
+    <div class="grid g2">
+      <div>
+        <h3>1）類型 <span class="muted">Types</span></h3>
+        <ul>
+          <li><b>封閉初選</b>（<span class="mono">Closed primary</span>）：僅登記該黨選民投票。</li>
+          <li><b>開放初選</b>（<span class="mono">Open primary</span>）：任何選民可選擇一黨之選票投票。</li>
+          <li><b>半開放／半封閉</b>（<span class="mono">Semi-open / Semi-closed</span>）：獨立選民可參與，或當場選黨。</li>
+          <li><b>黨團會議</b>（<span class="mono">Caucus</span>）：線下集會，討論後投票。</li>
+          <li><b>全票聯選</b>（<span class="mono">Blanket / Top-two</span>）：同一張選票列出跨黨候選人，前二名晉級。</li>
+        </ul>
+        <div class="hr"></div>
+        <h3>2）代表分配 <span class="muted">Delegate allocation</span></h3>
+        <ul>
+          <li><b>贏者全拿</b>（<span class="mono">Winner-take-all</span>）</li>
+          <li><b>比例代表＋門檻</b>（<span class="mono">Proportional with threshold</span>，常見 <span class="mono">15%</span>）</li>
+          <li><b>超級代表</b>（<span class="mono">Superdelegates</span>）與<b>前置化</b>（<span class="mono">Frontloading / Super Tuesday</span>）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>3）為何重要 <span class="muted">Why it matters</span></h3>
+        <ul>
+          <li>參與者組成改變候選人策略與民調動態。</li>
+          <li>規則決定<b>代表數</b>，進而影響提名賽節奏與正當性。</li>
+          <li>「全票聯選（Top-two）」可能造成同黨對決。</li>
+        </ul>
+        <div class="callout">
+          <b>提示：</b>下方模擬器提供不同規則下的代表分配與 Top-two 示範，可搭配課堂個案討論。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sim" class="card">
+    <h2>二、單州初選模擬器 <span class="muted">Single-state primary simulator</span></h2>
+
+    <div class="grid g2">
+      <div>
+        <h3>（A）黨內代表分配 <span class="muted">Delegate allocation</span></h3>
+        <div class="controls">
+          <div style="flex:1">
+            <label>初選型態 <span class="muted">(Closed / Open / Semi-open / Caucus)</span></label>
+            <select id="p_type">
+              <option value="closed">封閉初選（Closed）</option>
+              <option value="open">開放初選（Open）</option>
+              <option value="semi">半開放（Semi-open）</option>
+              <option value="caucus">黨團會議（Caucus）</option>
+            </select>
+          </div>
+          <div style="flex:1">
+            <label>代表分配規則 <span class="muted">(Winner-take-all / Proportional)</span></label>
+            <select id="p_rule">
+              <option value="wta">贏者全拿（Winner-take-all）</option>
+              <option value="prop">比例代表（Proportional）</option>
+            </select>
+          </div>
+          <div style="flex:1">
+            <label>代表總數 <span class="muted">(Delegates)</span></label>
+            <input id="p_delegates" type="number" min="10" max="500" step="10" value="100">
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div class="grid">
+          <div class="range-row">
+            <div>
+              <label>黨籍選民占比（%）<span class="muted"> Registered partisans</span></label>
+              <input id="p_partisans" type="range" min="40" max="90" value="65" oninput="updateLabels()">
+            </div>
+            <div class="mono" id="lab_partisans">65%</div>
+          </div>
+          <div class="range-row">
+            <div>
+              <label>獨立選民占比（%）<span class="muted"> Independents</span></label>
+              <input id="p_inds" type="range" min="5" max="40" value="20" oninput="updateLabels()">
+            </div>
+            <div class="mono" id="lab_inds">20%</div>
+          </div>
+          <div class="range-row">
+            <div>
+              <label>候選人 A 在黨內支持（%）<span class="muted"> Candidate A among partisans</span></label>
+              <input id="p_a_party" type="range" min="0" max="100" value="55" oninput="updateLabels()">
+            </div>
+            <div class="mono" id="lab_a_party">55%</div>
+          </div>
+          <div class="range-row">
+            <div>
+              <label>候選人 A 在獨立者支持（%）<span class="muted"> A among independents</span></label>
+              <input id="p_a_ind" type="range" min="0" max="100" value="48" oninput="updateLabels()">
+            </div>
+            <div class="mono" id="lab_a_ind">48%</div>
+          </div>
+          <div class="range-row" id="thRow" style="display:none">
+            <div>
+              <label>比例分配門檻（%）<span class="muted"> Threshold</span></label>
+              <input id="p_thr" type="range" min="0" max="25" value="15" oninput="updateLabels()">
+            </div>
+            <div class="mono" id="lab_thr">15%</div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px; gap:8px">
+          <button class="btn" onclick="runDelegate()">計算代表數</button>
+          <button class="btn secondary" onclick="presetCompetitive()">載入示例：競爭激烈州</button>
+        </div>
+
+        <div class="stat" style="margin-top:10px">
+          <div class="s">
+            <div class="muted">有效投票（Closed/Open 規則後）</div>
+            <div class="mono" id="p_votes">—</div>
+          </div>
+          <div class="s">
+            <div class="muted">A 票數 / 份額</div>
+            <div class="mono" id="p_a_votes">—</div>
+          </div>
+          <div class="s">
+            <div class="muted">B 票數 / 份額</div>
+            <div class="mono" id="p_b_votes">—</div>
+          </div>
+          <div class="s">
+            <div class="muted">代表分配（A | B）</div>
+            <div class="mono" id="p_out">—</div>
+          </div>
+        </div>
+        <p class="footnotes">說明：<span class="mono">Closed</span> 僅計入黨籍選民；<span class="mono">Open</span> 與 <span class="mono">Semi-open</span> 加計獨立者；
+        <span class="mono">Caucus</span> 視同封閉但投票率較低（模型以 70% 權重近似）。比例分配以簡化的最大餘數法（Largest Remainder）示範，僅做教學用途。</p>
+      </div>
+
+      <div>
+        <h3>（B）全票聯選 Top-two 示範 <span class="muted">Blanket / Top-two</span></h3>
+        <div class="controls">
+          <div style="flex:1">
+            <label>候選人 X 所屬政黨 <span class="muted">Party</span></label>
+            <select id="t_party_x"><option value="A">甲黨 A</option><option value="B">乙黨 B</option></select>
+          </div>
+          <div style="flex:1">
+            <label>候選人 Y 所屬政黨 <span class="muted">Party</span></label>
+            <select id="t_party_y"><option value="A">甲黨 A</option><option value="B">乙黨 B</option></select>
+          </div>
+          <div style="flex:1">
+            <label>候選人 Z 所屬政黨 <span class="muted">Party</span></label>
+            <select id="t_party_z"><option value="A">甲黨 A</option><option value="B">乙黨 B</option></select>
+          </div>
+        </div>
+        <div class="controls">
+          <div style="flex:1">
+            <label>候選人 X 票份（%）</label>
+            <input id="t_x" type="range" min="0" max="100" value="34" oninput="topTwoSync('x')">
+          </div>
+          <div style="flex:1">
+            <label>候選人 Y 票份（%）</label>
+            <input id="t_y" type="range" min="0" max="100" value="33" oninput="topTwoSync('y')">
+          </div>
+          <div style="flex:1">
+            <label>候選人 Z 票份（%）</label>
+            <input id="t_z" type="range" min="0" max="100" value="33" oninput="topTwoSync('z')">
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px; gap:8px">
+          <button class="btn" onclick="runTopTwo()">計算 Top-two</button>
+          <span class="muted">三者總和固定為 100%，用以呈現「跨黨同場競爭，前二名晉級」之效果。</span>
+        </div>
+        <div class="stat" style="margin-top:10px">
+          <div class="s">
+            <div class="muted">X / Y / Z</div>
+            <div class="mono" id="t_shares">—</div>
+          </div>
+          <div class="s">
+            <div class="muted">Top-1</div>
+            <div class="mono" id="t_top1">—</div>
+          </div>
+          <div class="s">
+            <div class="muted">Top-2</div>
+            <div class="mono" id="t_top2">—</div>
+          </div>
+          <div class="s">
+            <div class="muted">是否出現同黨對決？</div>
+            <div class="mono" id="t_note">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="gerry" class="card">
+    <h2>三、區劃分界互動小遊戲 <span class="muted">Cracking vs Packing（固定範例）</span></h2>
+
+    <div class="legend">
+      <span class="chip"><span class="dot blue"></span>藍色選民（Blue voters）</span>
+      <span class="chip"><span class="dot red"></span>紅色選民（Red voters）</span>
+      <span class="chip">每區 16 格，總 4 區｜本範例藍色約 55% 總票</span>
+      <span class="chip">選區外框顏色：<span class="dot" style="background:#22c55e"></span>1區｜<span class="dot" style="background:#f59e0b"></span>2區｜<span class="dot" style="background:#06b6d4"></span>3區｜<span class="dot" style="background:#a78bfa"></span>4區</span>
+    </div>
+
+    <div class="grid g2" style="margin-top:10px">
+      <div>
+        <div class="controls">
+          <button class="btn" onclick="generateVoters()">重置為固定範例</button>
+          <button class="btn secondary" onclick="clearDistricts()">清空分配</button>
+        </div>
+
+        <div id="grid" class="districtGrid" style="margin-top:10px"></div>
+
+        <div class="kbd-row" style="margin-top:8px">
+          <span class="muted">操作：</span>
+          <span class="kbd">點格子</span> 切換分區（1→2→3→4）
+          <span class="kbd">Shift+點</span> 清除分區
+        </div>
+
+        <div class="row" style="margin-top:10px; gap:8px">
+          <button class="btn good" onclick="autoPack()">套用示範：Packing</button>
+          <button class="btn warn" onclick="autoCrack()">套用示範：Cracking</button>
+          <button class="btn" onclick="calcSeats()">計算席次</button>
+        </div>
+
+        <div class="stat">
+          <div class="s">
+            <div class="muted">總票：藍 / 紅</div>
+            <div class="mono" id="g_totals">—</div>
+          </div>
+          <div class="s">
+            <div class="muted">席次：藍 / 紅</div>
+            <div class="mono" id="g_seats">—</div>
+          </div>
+          <div class="s">
+            <div class="muted">席票比（Seats-votes）</div>
+            <div class="mono" id="g_sv">—</div>
+          </div>
+          <div class="s">
+            <div class="muted">效率落差 <span class="muted">(Efficiency gap)</span></div>
+            <div class="mono" id="g_egap">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3>概念整理 <span class="muted">Key concepts</span></h3>
+        <ul>
+          <li><b>Cracking（分散）</b>：把某群體分散進多數選區，使其在每區皆弱小而輸。</li>
+          <li><b>Packing（集中）</b>：把某群體集中到少數選區，造成「贏很多、輸很多」。</li>
+          <li><b>席票比</b>（<span class="mono">Seats–Votes ratio</span>）：席次與得票比的偏離程度。</li>
+          <li><b>效率落差</b>（<span class="mono">Efficiency gap</span>）：兩黨「浪費選票」差額占總票的比率。</li>
+        </ul>
+        <div class="callout">
+          <b>練習任務：</b>在藍色總票 ≈ 55% 情況下，請嘗試
+          <ol>
+            <li>透過 <b>Packing</b> 讓藍方只贏 1 席（3:1 逆轉）。</li>
+            <li>透過 <b>Cracking</b> 讓紅方取得多數席。</li>
+          </ol>
+          比對「席票比」與「效率落差」變化，討論公平性與改革方向（如：獨立劃分委員會 Independent redistricting commission、比例代表 Proportional representation）。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="prompts" class="card">
+    <h2>四、課堂討論題 <span class="muted">Seminar prompts</span></h2>
+    <ol>
+      <li>不同初選規則如何改變候選人競選策略與媒體敘事？請以模擬器結果為例。</li>
+      <li>劃分規則如何在未改變總票下扭曲席次？效率落差與席票比何者更能說明「不公平」？</li>
+      <li>改革工具（獨立委員會、地理社群保全、壓低跨縣市切割、禁止期中重劃）哪一個最具可行性？</li>
+    </ol>
+    <p class="footnotes">本頁僅供教學示範，不代表任何政黨或立場；互動模型為簡化近似。</p>
+  </section>
+
+  <footer class="muted" style="margin:24px 0 12px">
+    版本：<span class="mono" id="ver">2025-11-10</span>｜製作：助教課教學頁（index.html）
+  </footer>
+</div>
+
+<script>
+// ===== Utilities =====
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+const fmtPct = v => (Math.round(v*10)/10).toFixed(1)+'%';
+const sum = arr => arr.reduce((a,b)=>a+b,0);
+
+// ===== Primary: labels =====
+function updateLabels(){
+  document.getElementById('lab_partisans').textContent = document.getElementById('p_partisans').value + '%';
+  document.getElementById('lab_inds').textContent = document.getElementById('p_inds').value + '%';
+  document.getElementById('lab_a_party').textContent = document.getElementById('p_a_party').value + '%';
+  document.getElementById('lab_a_ind').textContent = document.getElementById('p_a_ind').value + '%';
+  document.getElementById('lab_thr').textContent = document.getElementById('p_thr').value + '%';
+}
+document.getElementById('p_rule').addEventListener('change',()=>{
+  document.getElementById('thRow').style.display = (document.getElementById('p_rule').value==='prop')?'grid':'none';
+});
+
+function largestRemainder(shares, total, thr){
+  const valid = shares.map(s=>({...s})).filter(s=>s.share>=thr);
+  if(valid.length===0){
+    return largestRemainder(shares, total, 0);
+  }
+  let base = valid.map(s=>({id:s.id, seats: Math.floor(s.share*total), rem: (s.share*total) - Math.floor(s.share*total)}));
+  let seatsAssigned = base.reduce((a,b)=>a+b.seats,0);
+  let remaining = total - seatsAssigned;
+  base.sort((a,b)=>b.rem - a.rem);
+  for(let i=0;i<remaining;i++){
+    base[i%base.length].seats += 1;
+  }
+  const out = shares.map(s=>{
+    const m = base.find(b=>b.id===s.id);
+    return {id:s.id, seats: m?m.seats:0};
+  });
+  return out;
+}
+
+function runDelegate(){
+  const type = document.getElementById('p_type').value;
+  const rule = document.getElementById('p_rule').value;
+  const delegates = parseInt(document.getElementById('p_delegates').value,10);
+  const partisans = parseInt(document.getElementById('p_partisans').value,10);
+  const inds = parseInt(document.getElementById('p_inds').value,10);
+  const a_party = parseInt(document.getElementById('p_a_party').value,10)/100;
+  const a_ind = parseInt(document.getElementById('p_a_ind').value,10)/100;
+  const thr = parseInt(document.getElementById('p_thr').value,10)/100;
+
+  let eff_partisans = partisans;
+  let eff_inds = 0;
+  if(type==='open' || type==='semi') eff_inds = inds;
+  if(type==='caucus'){ eff_partisans = Math.round(partisans*0.7); }
+
+  const totalV = eff_partisans + eff_inds;
+  const aVotes = a_party*eff_partisans + a_ind*eff_inds;
+  const bVotes = totalV - aVotes;
+  const aShare = totalV===0?0:aVotes/totalV;
+  const bShare = 1-aShare;
+
+  document.getElementById('p_votes').textContent = `${totalV}（標準化人口 = 100）`;
+  document.getElementById('p_a_votes').textContent = `${Math.round(aVotes)} / ${fmtPct(aShare*100/100*100)}`;
+  document.getElementById('p_b_votes').textContent = `${Math.round(bVotes)} / ${fmtPct(bShare*100/100*100)}`;
+
+  let aDel=0,bDel=0;
+  if(rule==='wta'){
+    aDel = aShare>=bShare?delegates:0;
+    bDel = delegates - aDel;
+  }else{
+    const alloc = largestRemainder([{id:'A',share:aShare},{id:'B',share:bShare}], delegates, thr);
+    aDel = alloc.find(x=>x.id==='A').seats;
+    bDel = alloc.find(x=>x.id==='B').seats;
+  }
+  document.getElementById('p_out').textContent = `${aDel}｜${bDel}`;
+}
+
+function presetCompetitive(){
+  document.getElementById('p_type').value='open';
+  document.getElementById('p_rule').value='prop';
+  document.getElementById('p_delegates').value=120;
+  document.getElementById('p_partisans').value=60;
+  document.getElementById('p_inds').value=30;
+  document.getElementById('p_a_party').value=52;
+  document.getElementById('p_a_ind').value=47;
+  document.getElementById('p_thr').value=15;
+  updateLabels();
+  runDelegate();
+}
+
+
+// ===== Top-two =====
+function topTwoSync(anchor){
+  const ex = (id)=>document.getElementById(id);
+  let x = parseInt(ex('t_x').value||'0',10);
+  let y = parseInt(ex('t_y').value||'0',10);
+  let z = parseInt(ex('t_z').value||'0',10);
+  if(anchor==='x'){
+    const remain = Math.max(0, 100 - x);
+    const base = y+z;
+    if(base===0){ y = Math.floor(remain/2); z = remain - y; }
+    else { y = Math.round(remain * y/base); z = remain - y; }
+  }else if(anchor==='y'){
+    const remain = Math.max(0, 100 - y);
+    const base = x+z;
+    if(base===0){ x = Math.floor(remain/2); z = remain - x; }
+    else { x = Math.round(remain * x/base); z = remain - x; }
+  }else{
+    const remain = Math.max(0, 100 - z);
+    const base = x+y;
+    if(base===0){ x = Math.floor(remain/2); y = remain - x; }
+    else { x = Math.round(remain * x/base); y = remain - x; }
+  }
+  x = Math.min(100, Math.max(0, x));
+  y = Math.min(100, Math.max(0, y));
+  z = Math.max(0, 100 - x - y);
+  ex('t_x').value = x;
+  ex('t_y').value = y;
+  ex('t_z').value = z;
+  runTopTwo();
+}
+
+function runTopTwo(){
+  const ex = (id)=>document.getElementById(id);
+  const x = parseInt(ex('t_x').value||'0',10);
+  const y = parseInt(ex('t_y').value||'0',10);
+  const z = parseInt(ex('t_z').value||'0',10);
+  const arr = [{id:'X',v:x},{id:'Y',v:y},{id:'Z',v:z}].sort((a,b)=> b.v - a.v || a.id.localeCompare(b.id));
+  if(ex('t_shares')) ex('t_shares').textContent = `X ${x}%｜Y ${y}%｜Z ${z}%`;
+  if(ex('t_top1')) ex('t_top1').textContent = `${arr[0].id}（${arr[0].v}%）`;
+  if(ex('t_top2')) ex('t_top2').textContent = `${arr[1].id}（${arr[1].v}%）`;
+  const party = {
+    'X': ex('t_party_x') ? ex('t_party_x').value : 'A',
+    'Y': ex('t_party_y') ? ex('t_party_y').value : 'B',
+    'Z': ex('t_party_z') ? ex('t_party_z').value : 'A'
+  };
+  if(ex('t_note')) ex('t_note').textContent = party[arr[0].id] === party[arr[1].id] ? '是（同黨對決）' : '否';
+}
+
+// Initialize on load and when party changes
+window.addEventListener('load', ()=>{
+  // default parties if not set
+  const ex = (id)=>document.getElementById(id);
+  if(ex('t_party_x') && !ex('t_party_x').value) ex('t_party_x').value = 'A';
+  if(ex('t_party_y') && !ex('t_party_y').value) ex('t_party_y').value = 'B';
+  if(ex('t_party_z') && !ex('t_party_z').value) ex('t_party_z').value = 'A';
+  runTopTwo();
+  ['t_party_x','t_party_y','t_party_z'].forEach(id=>{
+    const el = ex(id);
+    if(el){ el.addEventListener('change', runTopTwo); }
+  });
+});
+
+// ===== Gerrymandering game (fixed example) =====
+const DIST_COLORS = {1:"#22c55e",2:"#f59e0b",3:"#06b6d4",4:"#a78bfa"};
+const N=8, DIST=4, SIZE=16;
+// Fixed 8x8 distribution with ~55% blue (35 blue cells)
+const FIXED = [
+  1,0,1,1,0,0,1,0,
+  0,1,1,1,0,0,0,0,
+  1,1,1,1,0,0,0,0,
+  1,1,1,1,1,0,0,0,
+  0,1,1,1,1,1,0,0,
+  0,0,1,1,1,1,1,0,
+  0,0,0,1,1,1,1,1,
+  0,0,0,0,1,1,1,1
+];
+let voters=[]; // 0=red,1=blue
+let districts=[]; // 0 unset, 1..4
+
+function generateVoters(){
+  voters = FIXED.slice();
+  districts = new Array(N*N).fill(0);
+  renderGrid();
+  updateTotals();
+}
+function idx(x,y){return y*N+x}
+
+function renderGrid(){
+  const grid = document.getElementById('grid');
+  grid.innerHTML='';
+  for(let y=0;y<N;y++){
+    for(let x=0;x<N;x++){
+      const i=idx(x,y);
+      const c = voters[i]===1?'blue':'red';
+      const d = districts[i];
+      const div=document.createElement('div');
+      div.className=`cell ${c}`;
+      div.title = `(${x+1},${y+1})：${voters[i]===1?'藍':'紅'}；分區：${d||'未分配'}`;
+      if(d>0){
+        const b=document.createElement('div'); b.className='badge'; b.textContent=d; div.appendChild(b);
+      }
+      // edges for borders
+      const top = y>0 && districts[i]!==districts[idx(x,y-1)] && districts[i]>0;
+      const left = x>0 && districts[i]!==districts[idx(x-1,y)] && districts[i]>0;
+      const right = x<N-1 && districts[i]!==districts[idx(x+1,y)] && districts[i]>0;
+      const bottom = y<N-1 && districts[i]!==districts[idx(x,y+1)] && districts[i]>0;
+      // set border color by this cell's district
+      if(d>0){ div.style.setProperty('--bcol', (DIST_COLORS[d]||'#f8fafc')); }
+      if(top) div.setAttribute('data-edge-top','1');
+      if(left) div.setAttribute('data-edge-left','1');
+      if(right) div.setAttribute('data-edge-right','1');
+      if(bottom) div.setAttribute('data-edge-bottom','1');
+
+      div.addEventListener('click',(ev)=>{
+        if(ev.shiftKey){ districts[i]=0; renderGrid(); return; }
+        districts[i] = (districts[i]%DIST)+1;
+        renderGrid();
+      });
+      grid.appendChild(div);
+    }
+  }
+}
+
+function clearDistricts(){
+  districts = districts.map(()=>0);
+  renderGrid();
+  document.getElementById('g_seats').textContent='—';
+  document.getElementById('g_sv').textContent='—';
+  document.getElementById('g_egap').textContent='—';
+}
+
+function updateTotals(){
+  const totBlue = voters.filter(v=>v===1).length;
+  const totRed = voters.length - totBlue;
+  document.getElementById('g_totals').textContent = `${totBlue}｜${totRed}（藍占比 ${fmtPct(totBlue/64*100)}）`;
+}
+
+function calcSeats(){
+  const counts=[0,0,0,0,0];
+  for(let i=0;i<districts.length;i++){
+    const d=districts[i];
+    if(d>0){ counts[d]++; }
+  }
+  if(!counts.slice(1).every(c=>c===SIZE)){
+    alert('每一選區需恰有 16 格。請完成 4 區分配（可用示範按鈕或手動指定）。');
+    return;
+  }
+  let seatsBlue=0,seatsRed=0;
+  for(let d=1;d<=DIST;d++){
+    let b=0,r=0;
+    for(let i=0;i<districts.length;i++){
+      if(districts[i]===d){
+        if(voters[i]===1) b++; else r++;
+      }
+    }
+    if(b>r) seatsBlue++; else seatsRed++;
+  }
+  document.getElementById('g_seats').textContent = `${seatsBlue}｜${seatsRed}`;
+  const totBlue = voters.filter(v=>v===1).length, tot = voters.length;
+  const sratio = (seatsBlue/DIST) / (totBlue/tot);
+  document.getElementById('g_sv').textContent = sratio.toFixed(2);
+  // Efficiency gap
+  let wastedBlue=0, wastedRed=0;
+  for(let d=1;d<=DIST;d++){
+    let b=0,r=0;
+    for(let i=0;i<districts.length;i++){
+      if(districts[i]===d){ if(voters[i]===1) b++; else r++; }
+    }
+    const quota = Math.floor(SIZE/2)+1;
+    if(b>r){ wastedBlue += b - quota; wastedRed += r; }
+    else { wastedRed += r - quota; wastedBlue += b; }
+  }
+  const eg = (wastedRed - wastedBlue)/tot;
+  document.getElementById('g_egap').textContent = eg.toFixed(3);
+}
+
+function autoPack(){
+  // Pack blue into District 1 heavily, then fill others left-to-right
+  const scores=[];
+  for(let y=0;y<N;y++){
+    for(let x=0;x<N;x++){
+      let s=0;
+      for(let dy=-1;dy<=1;dy++){
+        for(let dx=-1;dx<=1;dx++){
+          const nx=x+dx, ny=y+dy;
+          if(nx>=0&&nx<N&&ny>=0&&ny<N){
+            s += voters[idx(nx,ny)]?1:0;
+          }
+        }
+      }
+      scores.push({i:idx(x,y), s});
+    }
+  }
+  scores.sort((a,b)=>b.s-a.s);
+  districts = districts.map(()=>0);
+  let filled=0;
+  for(let k=0;k<scores.length;k++){
+    if(filled<SIZE){ districts[scores[k].i]=1; filled++; }
+  }
+  // Fill other districts sequentially
+  let cur=2, cnt=0;
+  for(let i=0;i<districts.length;i++){
+    if(districts[i]===0){
+      districts[i]=cur; cnt++;
+      if(cnt===SIZE){ cur++; cnt=0; }
+    }
+  }
+  renderGrid(); calcSeats();
+}
+
+function autoCrack(){
+  // Distribute blue cells evenly across all districts so each is ~40-45% blue
+  const blues=[], reds=[];
+  for(let i=0;i<voters.length;i++){
+    (voters[i]===1?blues:reds).push(i);
+  }
+  districts = districts.map(()=>0);
+  const targetBluePer = Math.floor(blues.length/DIST*0.45);
+  const assignedBlue=[0,0,0,0,0];
+  let d=1;
+  for(const bi of blues){
+    if(assignedBlue[d]>=targetBluePer) { d = (d%DIST)+1; continue; }
+    districts[bi]=d; assignedBlue[d]++; d = (d%DIST)+1;
+  }
+  const counts=[0,0,0,0,0];
+  for(let i=0;i<districts.length;i++){ if(districts[i]>0) counts[districts[i]]++; }
+  for(const ri of reds){
+    if(districts[ri]!==0) continue;
+    let best=1; for(let k=2;k<=DIST;k++) if(counts[k]<counts[best]) best=k;
+    if(counts[best]<SIZE){ districts[ri]=best; counts[best]++; }
+  }
+  for(let i=0;i<districts.length;i++){
+    if(districts[i]===0){
+      let best=1; for(let k=2;k<=DIST;k++) if(counts[k]<counts[best]) best=k;
+      districts[i]=best; counts[best]++;
+    }
+  }
+  renderGrid(); calcSeats();
+}
+
+// init
+generateVoters(); updateLabels(); runDelegate();
+</script>
+</body>
+</html>
